@@ -88,12 +88,12 @@ def categorical_feature_converstion(df):
     # converting label to numerical values/indices 
     le = LabelEncoder()
     df['label'] = le.fit_transform(features['label'])
-    df.value_counts()
     
     # converting year using One Hot Encoder
-    encoder = OneHotEncoder(drop='first', sparse=False)
+    enc = OneHotEncoder(drop='first', sparse=False, handle_unknown='ignore')
     # transform data
-    df[year] = encoder.fit_transform(df[year])
+    enc_df = enc.fit_transform(pd.DataFrame(df['year']))
+
     
     return df
 
