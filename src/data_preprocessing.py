@@ -1,10 +1,7 @@
 
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import scipy
-import argparser
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
 # Paths
@@ -81,6 +78,22 @@ def dealing_with_outliers(df):
     return df   
 
 def categorical_feature_converstion(df):
+    """
+    Converting categorical features to numerical 
+    using Label Encoder(final  label) or One Hot Encoder(year).
+    :param df:
+    :return modified df:
+    """    
+    
+    # converting label to numerical values/indices 
+    le = LabelEncoder()
+    df['label'] = le.fit_transform(features['label'])
+    df.value_counts()
+    
+    # converting year using One Hot Encoder
+    encoder = OneHotEncoder(drop='first', sparse=False)
+    # transform data
+    df[year] = encoder.fit_transform(df[year])
     
     return df
 
