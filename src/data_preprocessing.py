@@ -157,6 +157,7 @@ def preprocessing():
     X, y = separate_dataset(df, final_col)
     # normalization 
     X = standardisation(X)
+    # dealing with imbalance datset i.e. years
     # splitting thje dataset 
     train_X, test_X, train_y, test_y, val_X, val_y = splitting_dataset(df, seperate=separate)
     
