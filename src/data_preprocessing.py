@@ -95,6 +95,33 @@ def categorical_feature_converstion(df):
     
     return df
 
+def imbalance_dataset(df):
+    """
+    dealing with the imbalanced dataset in following steps
+    1) cut down the 'white' label as it has ~10x more datapoints        
+    2) we will use SMOTE algorithm to create synthetic datapoints
+    :param df:
+    :return: balanced dataset df
+    """
+    # randomly dropping datapoints having 'white' label
+    tobe_dropped = len(df[df['label']=="white"]) - len(df[df['label']=='paduaCryptoWall'])
+    df.drop(df.loc[df['label']=='white'].sample(frac=0.97).index, inplace=True)
+    
+    # SMOTE algorithm
+    # SMOTE to create synthetic datapoints
+
+    X, y = df.iloc[:,:-1], df.iloc[:,-1]
+    
+    # import library
+    from imblearn.over_sampling import SMOTE
+    
+    smote = SMOTE()
+    # fit predictor and target variable
+    x_smote, y_smote = smote.fit_resample(X, y)
+    df = pd.concat([pd.DataFrame(x_smote), pd.DataFrame(y_smote)], axis=1) 
+    
+    return df
+
 def shuffle_dataset(df):
     from sklearn.utils import shuffle
     return shuffle(df)
@@ -138,6 +165,7 @@ def standardisation(df):
     sc_x = StandardScaler()
     X = sc_x.fit_transform(X)
     
+    
     return df
 
 def preprocessing():
@@ -151,13 +179,14 @@ def preprocessing():
     df = dealing_with_outliers(df)
     # dealing with categorical data
     df = categorical_feature_converstion(df)
+    # dealing with imbalance datset i.e. years
+    df = imbalance_dataset(df)
     # shuffle the dataset 
     df = shuffle_dataset(df)
     # separate_dataset
     X, y = separate_dataset(df, final_col)
     # normalization 
-    X = standardisation(X)
-    # dealing with imbalance datset i.e. years
+    X = standardisation(X)    
     # splitting thje dataset 
     train_X, test_X, train_y, test_y, val_X, val_y = splitting_dataset(df, seperate=separate)
     
