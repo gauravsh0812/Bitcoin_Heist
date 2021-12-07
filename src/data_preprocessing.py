@@ -1,12 +1,5 @@
-import os
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-
-
-# Paths
-data_path = '../data'
-
 
 def import_data(data_path):
     """
@@ -14,7 +7,7 @@ def import_data(data_path):
     :param data_path:
     :return: dataframe
     """
-    return(pd.read_csv(os.path.join(data_path, 'BitcoinHeistData.csv'))
+    return(pd.read_csv('../data/BitcoinHeistData.csv'))
 
 def missing_values(df):  
     """
@@ -180,18 +173,18 @@ def saving_dataset(train_X, test_X, train_y, test_y, val_X, val_y):
     Finally, save the hard work we have done 
     :param: final datasets
     """
-    train_X.to_csv('training_data.csv', sep='\t')
-    test_X.to_csv('testing_data.csv', sep='\t')
-    val_X.to_csv('val_data.csv', sep='\t')
-    train_y.to_csv('training_label.csv', sep='\t')
-    test_y.to_csv('testing_label.csv', sep='\t')
-    val_y.to_csv('val_label.csv', sep='\t')
+    train_X.to_csv('../data/training_data.csv', sep='\t')
+    test_X.to_csv('../data/testing_data.csv', sep='\t')
+    val_X.to_csv('../data/val_data.csv', sep='\t')
+    train_y.to_csv('../data/training_label.csv', sep='\t')
+    test_y.to_csv('../data/testing_label.csv', sep='\t')
+    val_y.to_csv('../data/val_label.csv', sep='\t')
     
 
 
 def preprocessing():
     # Importing Dataset 
-    df = import_data(data_path)
+    df = import_data()
     # dealing with missing values
     df = missing_values(df)
     # dropping irrelevant features
