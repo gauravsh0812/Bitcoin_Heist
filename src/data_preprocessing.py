@@ -89,15 +89,54 @@ def categorical_feature_converstion(df):
     le = LabelEncoder()
     df['label'] = le.fit_transform(features['label'])
     
-    # converting year using One Hot Encoder
-    enc = OneHotEncoder(drop='first', sparse=False, handle_unknown='ignore')
-    # transform data
-    enc_df = enc.fit_transform(pd.DataFrame(df['year']))
 
+    dummies = pd.get_dummies(df['year'])
+    res = pd.concat([df, dummies], axis=1)
     
     return df
 
-def normalization(df):
+def shuffle_dataset(df):
+    from sklearn.utils import shuffle
+    return shuffle(df)
+
+def separate_dataset(df, final_col):
+    """
+    separating datset into X:features, y:final_label
+    :param df:
+    :param final_col: column/feature that will be serves as the final label
+    :return: X:features, y:final_label for classification or regression
+    """    
+    df_copy = df.copy()
+    y = df_copy[final_col]
+    X = df_copy.drop(final_col)
+    
+    return X,y
+
+
+def splitting_dataset(df, seperate=separate):
+    """
+    separating dataset into features and final label.
+    also, separting dataset into training and testing dataset.
+    :param df:
+    :return: train_X, train_y, test_X, test_y
+    """
+    
+    from sklearn.model_selection import train_test_split
+    train_X, test_X, train_y, test_y = train_test_split(X, y, test_size = 0.1, random_state = 0)
+    train_X, val_X, train_y, val_y = train_test_split(train_X, train_y, test_size = 0.1, random_state = 0)
+    
+    return (train_X, test_X, train_y, test_y, val_X, val_y)
+
+
+def standardisation(df):
+    """
+    standardize the dataset using StandardScaler
+    :param df:
+    :return df:
+    """
+    from sklearn.preprocessing import StandardScaler
+    sc_x = StandardScaler()
+    X = sc_x.fit_transform(X)
     
     return df
 
@@ -112,9 +151,15 @@ def preprocessing():
     df = dealing_with_outliers(df)
     # dealing with categorical data
     df = categorical_feature_converstion(df)
+    # shuffle the dataset 
+    df = shuffle_dataset(df)
+    # separate_dataset
+    X, y = separate_dataset(df, final_col)
     # normalization 
-    df = normalization(df)
-
+    X = standardisation(X)
+    # splitting thje dataset 
+    train_X, test_X, train_y, test_y, val_X, val_y = splitting_dataset(df, seperate=separate)
+    
 
 if __name__ == "__main__":
     preprocessing()
