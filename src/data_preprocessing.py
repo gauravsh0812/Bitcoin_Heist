@@ -115,6 +115,11 @@ def imbalance_dataset(df):
     return df
 
 def shuffle_dataset(df):
+    """
+    shuffling thae dataset
+    :param df:
+    :return df:
+    """
     from sklearn.utils import shuffle
     return shuffle(df)
 
