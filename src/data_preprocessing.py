@@ -1,11 +1,12 @@
-
+import os
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
 # Paths
-data_path = '../data/BitcoinHeistData.csv'
+data_path = '../data'
+
 
 def import_data(data_path):
     """
@@ -13,7 +14,7 @@ def import_data(data_path):
     :param data_path:
     :return: dataframe
     """
-    return(pd.read_csv(data_path))
+    return(pd.read_csv(os.path.join(data_path, 'BitcoinHeistData.csv'))
 
 def missing_values(df):  
     """
@@ -85,13 +86,12 @@ def categorical_feature_converstion(df):
     :return modified df:
     """    
     
-    # converting label to numerical values/indices 
-    le = LabelEncoder()
-    df['label'] = le.fit_transform(features['label'])
+    data_enc = pd.get_dummies(data=df['year'],drop_first=True)
+    df = pd.concat([pd.DataFrame(data_enc), df.iloc[:,1:]], axis=1)
     
-
-    dummies = pd.get_dummies(df['year'])
-    res = pd.concat([df, dummies], axis=1)
+    from sklearn import preprocessing
+    le = preprocessing.LabelEncoder()
+    df['label'] = le.fit_transform(df['label'])
     
     return df
 
@@ -104,7 +104,6 @@ def imbalance_dataset(df):
     :return: balanced dataset df
     """
     # randomly dropping datapoints having 'white' label
-    tobe_dropped = len(df[df['label']=="white"]) - len(df[df['label']=='paduaCryptoWall'])
     df.drop(df.loc[df['label']=='white'].sample(frac=0.97).index, inplace=True)
     
     # SMOTE algorithm
@@ -140,7 +139,7 @@ def separate_dataset(df, final_col):
     return X,y
 
 
-def splitting_dataset(df, seperate=separate):
+def splitting_dataset(X,y):
     """
     separating dataset into features and final label.
     also, separting dataset into training and testing dataset.
@@ -155,18 +154,40 @@ def splitting_dataset(df, seperate=separate):
     return (train_X, test_X, train_y, test_y, val_X, val_y)
 
 
-def standardisation(df):
+def scaling(train_X, test_X, val_X, COL):
     """
     standardize the dataset using StandardScaler
+    fitting and transforming training and validation datset
+    while transforming testing dataset using the 
     :param df:
     :return df:
     """
     from sklearn.preprocessing import StandardScaler
     sc_x = StandardScaler()
-    X = sc_x.fit_transform(X)
+    for x in [train_X, val_X]:
+        x = sc_x.fit_transform(x)
+        x = pd.DataFrame(x)
+        x.columns = COL[1:-1]
+        
+    test_X = sc_x.transform(test_X)
+    test_X = pd.DataFrame(test_X)
+    test_X.columns = COL[1:-1]
+      
+    return (train_X, test_X, val_X)
+
+def saving_dataset(train_X, test_X, train_y, test_y, val_X, val_y):
+    """
+    Finally, save the hard work we have done 
+    :param: final datasets
+    """
+    train_X.to_csv('training_data.csv', sep='\t')
+    test_X.to_csv('testing_data.csv', sep='\t')
+    val_X.to_csv('val_data.csv', sep='\t')
+    train_y.to_csv('training_label.csv', sep='\t')
+    test_y.to_csv('testing_label.csv', sep='\t')
+    val_y.to_csv('val_label.csv', sep='\t')
     
-    
-    return df
+
 
 def preprocessing():
     # Importing Dataset 
@@ -184,11 +205,13 @@ def preprocessing():
     # shuffle the dataset 
     df = shuffle_dataset(df)
     # separate_dataset
-    X, y = separate_dataset(df, final_col)
-    # normalization 
-    X = standardisation(X)    
+    X, y = separate_dataset(df, 'label')    
     # splitting thje dataset 
-    train_X, test_X, train_y, test_y, val_X, val_y = splitting_dataset(df, seperate=separate)
+    train_X, test_X, train_y, test_y, val_X, val_y = splitting_dataset(X,y)
+    # standardization
+    train_X, test_X = scaling(train_X, test_X, val_X, df.columns)  
+    # Saving final training and testing datasets
+    saving_dataset(train_X, test_X, train_y, test_y, val_X, val_y )
     
 
 if __name__ == "__main__":
