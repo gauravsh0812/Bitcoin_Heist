@@ -71,7 +71,8 @@ def regression(X,y, test=0):
         print(' ')
         print('The accuracy table')
         print(Final_table)
-        
+    
+    full_training(X,y)
 
 if __name__ == '__main__':
     

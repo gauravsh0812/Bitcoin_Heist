@@ -146,27 +146,22 @@ def categorical_feature_converstion(df):
     print(' ')
     return df
 
-def imbalance_dataset(df):
+def imbalance_dataset(df, drop_values=False):
     """
     dealing with the imbalanced dataset in following steps
-    1) cut down the 'white' label as it has ~10x more datapoints        
-    2) we will use SMOTE algorithm to create synthetic datapoints
+     we will use SMOTE algorithm to create synthetic datapoints
     :param df:
     :return: balanced dataset df
     """
     # randomly dropping datapoints having 'white' label
     print('dealing with imbalanced dataset...')
     print('  ')
-
-    df.drop(df.loc[df['label']=='white'].sample(frac=0.97).index, inplace=True)
     
     # SMOTE algorithm
     # SMOTE to create synthetic datapoints
-
     X, y = df.iloc[:,:-1], df.iloc[:,-1]
     # import library
     from imblearn.over_sampling import SMOTE
-    
     smote = SMOTE()
     # fit predictor and target variable
     x_smote, y_smote = smote.fit_resample(X, y)
@@ -200,18 +195,31 @@ def separate_dataset(df):
 
 
 
-def splitting_dataset(df_to_split, test_split=False):
+def splitting_dataset(df_to_split, clf, reg, test_split=False):
     """
     separating dataset into features and final label.
     also, separting dataset into training and testing dataset.
     :param df:
     :return: train_X, train_y, test_X, test_y
     """
+    from sklearn.utils import shuffle
+    
     if test_split:
         print('dividing  the dataset into test and train...')
         print(' ')
-        N = int(0.9*len(df_to_split))
-        train_df, test_df = df_to_split[:N], df_to_split[N:]
+        
+        if clf==1:
+            label_dict = df_to_split['label'].value_counts().to_dict()
+            test_df = pd.DataFrame()
+            train_df = pd.DataFrame()
+            for k,v in label_dict.items():
+                N = int(0.1*v)
+                test_df = shuffle(pd.concat([test_df, pd.DataFrame(shuffle(df_to_split[df_to_split['label']==k]).iloc[:N,:])], axis=0))
+                train_df = shuffle(pd.concat([train_df, pd.DataFrame(shuffle(df_to_split[df_to_split['label']==k]).iloc[N:,:])], axis=0))
+        
+        elif reg==1:    
+            N = int(0.9*len(df_to_split))
+            train_df, test_df = df_to_split[:N], df_to_split[N:]
         
         return (train_df, test_df)
     
@@ -328,19 +336,17 @@ def preprocessing(data_path, clf, reg):
     df = drop_features(df, clf, reg)
     # dealing with outliers and skewness
     df = dealing_with_outliers(df)
-    # shuffle the datasets 
-    df = shuffle_dataset(df)  
     # splitting the dataset into train, test as testing dataset shouldn't be augmented
-    train_df, test_df = splitting_dataset(df, test_split=True)
+    train_df, test_df = splitting_dataset(df, clf, reg, test_split=True)
     # dealing with imbalance datset i.e. label
     if clf ==1:
-        train_df = imbalance_dataset(train_df)
+        train_df = imbalance_dataset(train_df, drop_values=False)
     # dealing with categorical data
     if clf ==1:
         train_df = categorical_feature_converstion(train_df)   
         test_df = categorical_feature_converstion(test_df)   
     # splitting the dataset into train, Validation
-    train_X, train_y, val_X, val_y = splitting_dataset(train_df, test_split=False)
+    train_X, train_y, val_X, val_y = splitting_dataset(train_df, clf, reg, test_split=False)
     # splitting the test dataset into features and label
     test_X, test_y = separate_dataset(test_df)
     # standardization

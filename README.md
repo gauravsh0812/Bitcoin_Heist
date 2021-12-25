@@ -21,12 +21,12 @@ XGBoost
 A sample of dataset is provided that consists of approximate 60K datapoints. Full dataset can be downloaded from https://archive.ics.uci.edu/ml/datasets/BitcoinHeistRansomwareAddressDataset
 
 ## Model 
-Before running models, it is highly recommended to read **"Exploratory Data Analysis(EDA)"** report. It can be found at **"../code/EDA_Bitcoin_Heist.ipynb"**
+### Before running models, it is highly recommended to read **"Exploratory Data Analysis(EDA)"** report. It can be found at **"../code/EDA_Bitcoin_Heist.ipynb"**
 
 ### Classification Model
 To run data preprocessing for classification model
 ```
-python code/data_preprocessing -data 'data/BitcoinHeistData.csv' -clf 1 -reg 0
+python code/data_preprocessing.py -data 'data/BitcoinHeistData.csv' -clf 1 -reg 0
 ```
 To train classification model for the already hypertuned best performance model 
 ```
@@ -42,13 +42,10 @@ python code/classification_model.py -data 'data/classification/testing_data.csv'
 ### Regression Model
 To run data preprocessing for regression model
 ```
-python code/data_preprocessing -data 'data/BitcoinHeistData.csv' -clf 0 -reg 1
+python code/data_preprocessing.py -data 'data/BitcoinHeistData.csv' -clf 0 -reg 1
 ```
 To train regression model 
 ```
 python code/regression_model.py -data 'data/regression/training_data.csv' -label 'data/regression/training_label.csv' -test 0 
 ```
-To test the regression model
-```
-python code/regression_model.py -data 'data/regression/testing_data.csv' -label 'data/regression/testing_label.csv' -test 1 
-```
+Since we don't get good accuracy score due to lack of correlation between numerical features, we will not test the model. It is futile to test a poor performing model.

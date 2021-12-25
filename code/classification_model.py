@@ -239,8 +239,6 @@ def classification(X,y, test=0,  full_train=0):
 if __name__ == '__main__':
     
     X = pd.read_csv(args.data_path)
-    X = X.iloc[:20000, :]
     y = pd.read_csv(args.label_path)
-    y = y.iloc[:20000, :]
     classification(X,y, test = args.test_flag, full_train=args.train_from_scratch)
     
